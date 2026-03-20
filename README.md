@@ -4,7 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/n8n-flowguard)](https://www.npmjs.com/package/n8n-flowguard)
 [![license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/MohibShaikh/FlowGuard/blob/main/LICENSE)
-[![tests](https://img.shields.io/badge/tests-85%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-86%20passing-brightgreen)]()
 
 Security scanner for [n8n](https://n8n.io) workflows. Scans exported JSON files or connects directly to a running n8n instance via API. Detects vulnerabilities mapped to the [OWASP Top 10 for Agentic Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/).
 
@@ -135,7 +135,7 @@ Found 1 critical, 1 high issues across 1 workflow(s).
 
 ```bash
 npm install          # install dependencies
-npm test             # run tests (85 tests)
+npm test             # run tests (86 tests)
 npm run build        # build CLI
 npm run lint         # type check
 ```

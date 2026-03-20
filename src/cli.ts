@@ -17,7 +17,7 @@ const program = new Command();
 program
   .name("flowguard")
   .description("Security scanner for n8n workflow JSON files")
-  .version("0.1.0");
+  .version("0.1.1");
 
 program
   .command("scan")
