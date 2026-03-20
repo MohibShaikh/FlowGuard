@@ -3,10 +3,10 @@
 > The missing security scanner for n8n workflows.
 
 [![npm version](https://img.shields.io/npm/v/n8n-flowguard)](https://www.npmjs.com/package/n8n-flowguard)
-[![license](https://img.shields.io/npm/l/n8n-flowguard)](https://github.com/MohibShaikh/FlowGuard/blob/main/LICENSE)
-[![tests](https://img.shields.io/badge/tests-73%20passing-brightgreen)]()
+[![license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/MohibShaikh/FlowGuard/blob/main/LICENSE)
+[![tests](https://img.shields.io/badge/tests-85%20passing-brightgreen)]()
 
-Security scanner for [n8n](https://n8n.io) workflow JSON files. Detects vulnerabilities mapped to the [OWASP Top 10 for Agentic Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/).
+Security scanner for [n8n](https://n8n.io) workflows. Scans exported JSON files or connects directly to a running n8n instance via API. Detects vulnerabilities mapped to the [OWASP Top 10 for Agentic Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/).
 
 ## Why FlowGuard?
 
@@ -15,9 +15,9 @@ n8n powers automation for thousands of organizations, but its workflows are secu
 - **230,000+ n8n instances** are publicly exposed ([Shodan](https://www.shodan.io/)), many running unpatched versions vulnerable to CVEs like [CVE-2024-28241](https://www.cvedetails.com/cve/CVE-2024-28241/) (SSRF) and [CVE-2023-27564](https://www.cvedetails.com/cve/CVE-2023-27564/) (auth bypass).
 - Workflows routinely pipe webhook input directly into code execution, databases, and shell commands — with zero validation.
 - Hardcoded API keys and tokens sit in node parameters instead of the credential store.
-- No existing tool audits n8n workflow JSON for these patterns.
+- No existing tool audits n8n workflows for these patterns.
 
-FlowGuard fills this gap. It performs static analysis on exported workflow files, catches dangerous patterns before they hit production, and outputs SARIF for CI/CD integration. Unlike [Agentic Radar](https://github.com/splx-ai/agentic-radar) (which focuses on LLM agent frameworks like LangChain/CrewAI), FlowGuard is purpose-built for n8n's node-and-connection model with graph-based traversal.
+FlowGuard fills this gap. It performs graph-based static analysis, catches dangerous patterns before they hit production, and outputs SARIF for CI/CD integration. Unlike [Agentic Radar](https://github.com/splx-ai/agentic-radar) (which focuses on LLM agent frameworks like LangChain/CrewAI), FlowGuard is purpose-built for n8n's node-and-connection model.
 
 ## Install
 
@@ -35,17 +35,33 @@ npm install && npm run build
 
 ## Usage
 
+### Scan exported workflow files
+
 ```bash
-# Scan a workflow file
+# Scan a single file
 flowguard scan workflow.json
 
 # Scan a directory of workflows
 flowguard scan ./workflows/
+```
 
+### Scan a live n8n instance
+
+```bash
+# Connect directly to n8n via API
+flowguard scan --url https://your-n8n.example.com --api-key YOUR_API_KEY
+
+# Combine: scan local files + a live instance
+flowguard scan ./workflows/ --url https://your-n8n.example.com --api-key YOUR_API_KEY
+```
+
+### Output formats
+
+```bash
 # JSON output
 flowguard scan workflow.json --json
 
-# SARIF output (for GitHub Code Scanning, etc.)
+# SARIF output (for GitHub Code Scanning, VS Code, etc.)
 flowguard scan workflow.json --sarif
 
 # Fail in CI if critical or high findings exist
@@ -96,7 +112,7 @@ Found 1 critical, 1 high issues across 1 workflow(s).
 ## CI/CD
 
 ```yaml
-# GitHub Actions example
+# GitHub Actions — scan exported workflow files
 - name: Scan n8n workflows
   run: |
     npx n8n-flowguard scan ./workflows --sarif > results.sarif
@@ -109,15 +125,21 @@ Found 1 critical, 1 high issues across 1 workflow(s).
     sarif_file: results.sarif
 ```
 
+```yaml
+# GitHub Actions — scan a live n8n instance
+- name: Audit n8n instance
+  run: npx n8n-flowguard scan --url ${{ secrets.N8N_URL }} --api-key ${{ secrets.N8N_API_KEY }} --fail-on high
+```
+
 ## Development
 
 ```bash
 npm install          # install dependencies
-npm test             # run tests (73 tests)
+npm test             # run tests (85 tests)
 npm run build        # build CLI
 npm run lint         # type check
 ```
 
 ## License
 
-MIT
+[AGPL-3.0](LICENSE)

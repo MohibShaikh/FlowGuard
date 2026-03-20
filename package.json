@@ -15,7 +15,7 @@
   "engines": {
     "node": ">=18"
   },
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "dependencies": {
     "chalk": "^5.6.2",
     "commander": "^14.0.3",
