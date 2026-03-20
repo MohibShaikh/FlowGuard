@@ -1,5 +1,5 @@
 {
-  "name": "flowguard",
+  "name": "n8n-flowguard",
   "version": "0.1.0",
   "description": "Security scanner for n8n workflow JSON files",
   "type": "module",

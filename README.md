@@ -1,11 +1,28 @@
 # FlowGuard
 
+> The missing security scanner for n8n workflows.
+
+[![npm version](https://img.shields.io/npm/v/n8n-flowguard)](https://www.npmjs.com/package/n8n-flowguard)
+[![license](https://img.shields.io/npm/l/n8n-flowguard)](https://github.com/MohibShaikh/FlowGuard/blob/main/LICENSE)
+[![tests](https://img.shields.io/badge/tests-73%20passing-brightgreen)]()
+
 Security scanner for [n8n](https://n8n.io) workflow JSON files. Detects vulnerabilities mapped to the [OWASP Top 10 for Agentic Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/).
+
+## Why FlowGuard?
+
+n8n powers automation for thousands of organizations, but its workflows are security-blind by default:
+
+- **230,000+ n8n instances** are publicly exposed ([Shodan](https://www.shodan.io/)), many running unpatched versions vulnerable to CVEs like [CVE-2024-28241](https://www.cvedetails.com/cve/CVE-2024-28241/) (SSRF) and [CVE-2023-27564](https://www.cvedetails.com/cve/CVE-2023-27564/) (auth bypass).
+- Workflows routinely pipe webhook input directly into code execution, databases, and shell commands — with zero validation.
+- Hardcoded API keys and tokens sit in node parameters instead of the credential store.
+- No existing tool audits n8n workflow JSON for these patterns.
+
+FlowGuard fills this gap. It performs static analysis on exported workflow files, catches dangerous patterns before they hit production, and outputs SARIF for CI/CD integration. Unlike [Agentic Radar](https://github.com/splx-ai/agentic-radar) (which focuses on LLM agent frameworks like LangChain/CrewAI), FlowGuard is purpose-built for n8n's node-and-connection model with graph-based traversal.
 
 ## Install
 
 ```bash
-npm install -g flowguard
+npm install -g n8n-flowguard
 ```
 
 Or run from source:
@@ -81,9 +98,12 @@ Found 1 critical, 1 high issues across 1 workflow(s).
 ```yaml
 # GitHub Actions example
 - name: Scan n8n workflows
-  run: npx flowguard scan ./workflows --sarif > results.sarif --fail-on high
+  run: |
+    npx n8n-flowguard scan ./workflows --sarif > results.sarif
+    npx n8n-flowguard scan ./workflows --fail-on high
 
 - name: Upload SARIF
+  if: always()
   uses: github/codeql-action/upload-sarif@v3
   with:
     sarif_file: results.sarif
