@@ -61,8 +61,8 @@ describe("fetchWorkflows", () => {
 
     expect(mockFetch).toHaveBeenCalledOnce();
     const [url, init] = (mockFetch as ReturnType<typeof vi.fn>).mock.calls[0] as [string, RequestInit];
-    // Trailing slash should be stripped
-    expect(url).toBe("https://n8n.example.com/api/v1/workflows");
+    // Trailing slash should be stripped, limit param added
+    expect(url).toBe("https://n8n.example.com/api/v1/workflows?limit=250");
     expect((init.headers as Record<string, string>)["X-N8N-API-KEY"]).toBe("test-key");
   });
 
@@ -164,5 +164,34 @@ describe("fetchWorkflows", () => {
     // Should not throw even though there's a skipped workflow and no warning handler
     const results = await fetchWorkflows("https://n8n.example.com", "key");
     expect(results).toHaveLength(0);
+  });
+
+  it("paginates through multiple pages using nextCursor", async () => {
+    const page1 = { data: [validWorkflow], nextCursor: "cursor-abc" };
+    const page2 = { data: [anotherWorkflow] }; // no nextCursor = last page
+
+    let callCount = 0;
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      callCount++;
+      const body = callCount === 1 ? page1 : page2;
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: () => Promise.resolve(body),
+      } as Response);
+    });
+
+    const results = await fetchWorkflows("https://n8n.example.com", "key");
+
+    expect(results).toHaveLength(2);
+    expect(results[0].name).toBe("My Workflow");
+    expect(results[1].name).toBe("Another Workflow");
+
+    // Verify second call includes cursor param
+    const calls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls).toHaveLength(2);
+    expect(calls[0][0]).toBe("https://n8n.example.com/api/v1/workflows?limit=250");
+    expect(calls[1][0]).toBe("https://n8n.example.com/api/v1/workflows?limit=250&cursor=cursor-abc");
   });
 });
