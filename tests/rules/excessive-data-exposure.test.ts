@@ -6,10 +6,14 @@ describe("excessive-data-exposure rule", () => {
   it("flags httpRequest directly connected to Slack (logging node)", () => {
     const graph = makeWorkflow(
       [
+        makeNode("Trigger", "n8n-nodes-base.webhook", {}),
         makeNode("HTTP", "n8n-nodes-base.httpRequest", {}),
         makeNode("Slack", "n8n-nodes-base.slack", {}),
       ],
-      { HTTP: { main: [[{ node: "Slack", type: "main", index: 0 }]] } }
+      {
+        Trigger: { main: [[{ node: "HTTP", type: "main", index: 0 }]] },
+        HTTP: { main: [[{ node: "Slack", type: "main", index: 0 }]] },
+      }
     );
     const findings = excessiveDataExposureRule.run(graph);
     expect(findings).toHaveLength(1);
@@ -19,12 +23,16 @@ describe("excessive-data-exposure rule", () => {
   it("flags httpRequest with fullResponse → logging node", () => {
     const graph = makeWorkflow(
       [
+        makeNode("Trigger", "n8n-nodes-base.webhook", {}),
         makeNode("HTTP", "n8n-nodes-base.httpRequest", {
           options: { response: { response: { fullResponse: true } } },
         }),
         makeNode("Slack", "n8n-nodes-base.slack", {}),
       ],
-      { HTTP: { main: [[{ node: "Slack", type: "main", index: 0 }]] } }
+      {
+        Trigger: { main: [[{ node: "HTTP", type: "main", index: 0 }]] },
+        HTTP: { main: [[{ node: "Slack", type: "main", index: 0 }]] },
+      }
     );
     const findings = excessiveDataExposureRule.run(graph);
     expect(findings.length).toBeGreaterThanOrEqual(1);

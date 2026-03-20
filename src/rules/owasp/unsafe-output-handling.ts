@@ -1,5 +1,5 @@
 import type { Rule, Finding, WorkflowGraph, GraphNode } from "../../types.js";
-import { HTTP_NODES, CODE_EXEC_NODES, DATABASE_NODES, VALIDATION_NODES } from "../node-types.js";
+import { HTTP_NODES, CODE_EXEC_NODES, DATABASE_NODES, VALIDATION_NODES, isTrigger } from "../node-types.js";
 
 const DANGEROUS_TARGETS = [...CODE_EXEC_NODES, ...DATABASE_NODES] as readonly string[];
 
@@ -45,7 +45,7 @@ export const unsafeOutputHandlingRule: Rule = {
   run(graph: WorkflowGraph): Finding[] {
     const findings: Finding[] = [];
     const httpNodes = graph.nodes.filter((n) =>
-      (HTTP_NODES as readonly string[]).includes(n.type)
+      (HTTP_NODES as readonly string[]).includes(n.type) && !isTrigger(n, graph)
     );
 
     for (const httpNode of httpNodes) {

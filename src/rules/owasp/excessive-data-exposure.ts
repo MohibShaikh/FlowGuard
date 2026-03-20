@@ -1,5 +1,5 @@
 import type { Rule, Finding, WorkflowGraph, GraphNode } from "../../types.js";
-import { HTTP_NODES, LOGGING_NODES, VALIDATION_NODES, TRANSFORM_NODES } from "../node-types.js";
+import { HTTP_NODES, LOGGING_NODES, VALIDATION_NODES, TRANSFORM_NODES, isTrigger } from "../node-types.js";
 
 const INTERMEDIARY_NODES = [...VALIDATION_NODES, ...TRANSFORM_NODES] as readonly string[];
 
@@ -56,7 +56,7 @@ export const excessiveDataExposureRule: Rule = {
   run(graph: WorkflowGraph): Finding[] {
     const findings: Finding[] = [];
     const httpNodes = graph.nodes.filter((n) =>
-      (HTTP_NODES as readonly string[]).includes(n.type)
+      (HTTP_NODES as readonly string[]).includes(n.type) && !isTrigger(n, graph)
     );
 
     for (const httpNode of httpNodes) {
