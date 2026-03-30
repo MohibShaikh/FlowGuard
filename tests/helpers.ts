@@ -14,13 +14,16 @@ export function makeNode(
   name: string,
   type: string,
   params: Record<string, unknown> = {},
-  credentials?: Record<string, unknown>
+  credentials?: Record<string, unknown>,
+  options?: { id?: string; disabled?: boolean }
 ) {
   return {
+    id: options?.id,
     name,
     type,
     parameters: params,
     position: [0, 0] as [number, number],
     ...(credentials ? { credentials } : {}),
+    ...(options?.disabled !== undefined ? { disabled: options.disabled } : {}),
   };
 }
