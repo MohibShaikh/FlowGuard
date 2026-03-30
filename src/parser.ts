@@ -30,7 +30,7 @@ export async function parseWorkflows(
       continue;
     }
     if (fileStat.isDirectory()) {
-      const found = await glob("**/*.json", { cwd: p, absolute: true, nofollow: true });
+      const found = await glob("**/*.json", { cwd: p, absolute: true, follow: false });
       if (found.length === 0) {
         warn(`No workflow files found in ${p}`);
       }
