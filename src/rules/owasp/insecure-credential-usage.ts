@@ -47,6 +47,36 @@ export const insecureCredentialUsageRule: Rule = {
     const findings: Finding[] = [];
 
     for (const node of graph.nodes) {
+      // Check sticky note content for secret patterns
+      if (node.type === "n8n-nodes-base.stickyNote") {
+        const content = node.parameters.content;
+        if (typeof content === "string") {
+          const contentPatterns = SECRET_VALUE_PATTERNS.map(
+            (p) => new RegExp(p.source.replace(/^\^/, ""), p.flags),
+          );
+          for (const pattern of contentPatterns) {
+            if (pattern.test(content)) {
+              findings.push({
+                ruleId: this.id,
+                severity: this.severity,
+                title: this.title,
+                message: `Sticky note "${node.name}" contains what appears to be a hardcoded credential`,
+                location: {
+                  workflow: graph.filePath,
+                  nodeId: node.id,
+                  nodeName: node.name,
+                  nodeType: node.type,
+                },
+                remediation: "Remove secrets from sticky notes. Use n8n's built-in credential store.",
+                owaspCategory: this.owaspCategory,
+              });
+              break;
+            }
+          }
+        }
+        continue;
+      }
+
       walkParameters(node.parameters, (key, value) => {
         let isSecret = false;
 
@@ -59,7 +89,7 @@ export const insecureCredentialUsageRule: Rule = {
         }
 
         // Check key name + value length for password-like params
-        if (!isSecret && SECRET_KEY_PATTERN.test(key) && value.length > 8 && !value.includes("{{")) {
+        if (!isSecret && SECRET_KEY_PATTERN.test(key) && value.length > 8 && !value.includes("{{") && !value.startsWith("=")) {
           isSecret = true;
         }
 

@@ -83,4 +83,23 @@ describe("insecure-credential-usage rule", () => {
     const findings = insecureCredentialUsageRule.run(graph);
     expect(findings.length).toBeGreaterThanOrEqual(1);
   });
+
+  it("does not flag n8n expression in ={{ }} format", () => {
+    const graph = makeWorkflow([
+      makeNode("DB", "n8n-nodes-base.postgres", {
+        password: "={{ $credentials.myDb.password }}",
+      }),
+    ]);
+    expect(insecureCredentialUsageRule.run(graph)).toHaveLength(0);
+  });
+
+  it("flags secrets in sticky note content", () => {
+    const graph = makeWorkflow([
+      makeNode("Note", "n8n-nodes-base.stickyNote", {
+        content: "API key: sk-1234567890abcdef",
+      }),
+    ]);
+    const findings = insecureCredentialUsageRule.run(graph);
+    expect(findings.length).toBeGreaterThanOrEqual(1);
+  });
 });
