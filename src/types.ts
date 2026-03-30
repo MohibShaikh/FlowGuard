@@ -74,6 +74,7 @@ export interface RawWorkflow {
     parameters?: Record<string, unknown>;
     credentials?: Record<string, unknown>;
     position: [number, number];
+    disabled?: boolean;
   }>;
   connections: Record<string, Record<string, Array<Array<{ node: string; type: string; index: number }>>>>;
 }

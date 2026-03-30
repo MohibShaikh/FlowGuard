@@ -82,4 +82,69 @@ describe("buildGraph", () => {
     expect(graph.getSuccessors("Code")).toHaveLength(0);
     expect(graph.getPredecessors("Code")).toHaveLength(0);
   });
+
+  it("uses node id field as graph node id when present", () => {
+    const graph = buildGraph({
+      name: "Test",
+      nodes: [
+        { id: "uuid-1", name: "Webhook", type: "n8n-nodes-base.webhook", parameters: {}, position: [0, 0] },
+        { id: "uuid-2", name: "Code", type: "n8n-nodes-base.code", parameters: {}, position: [1, 0] },
+      ],
+      connections: {
+        "Webhook": { main: [[{ node: "Code", type: "main", index: 0 }]] },
+      },
+    }, "test.json");
+
+    expect(graph.getNode("uuid-1")).toBeDefined();
+    expect(graph.getNode("uuid-1")!.name).toBe("Webhook");
+    expect(graph.getSuccessors("uuid-1")).toHaveLength(1);
+    expect(graph.getSuccessors("uuid-1")[0].name).toBe("Code");
+  });
+
+  it("falls back to name as id when id field is absent", () => {
+    const graph = buildGraph({
+      name: "Test",
+      nodes: [
+        { name: "Webhook", type: "n8n-nodes-base.webhook", parameters: {}, position: [0, 0] },
+      ],
+      connections: {},
+    }, "test.json");
+
+    expect(graph.getNode("Webhook")).toBeDefined();
+  });
+
+  it("excludes disabled nodes from graph", () => {
+    const graph = buildGraph({
+      name: "Test",
+      nodes: [
+        { name: "Webhook", type: "n8n-nodes-base.webhook", parameters: {}, position: [0, 0] },
+        { name: "Code", type: "n8n-nodes-base.code", parameters: {}, position: [1, 0], disabled: true },
+      ],
+      connections: {
+        "Webhook": { main: [[{ node: "Code", type: "main", index: 0 }]] },
+      },
+    }, "test.json");
+
+    expect(graph.nodes).toHaveLength(1);
+    expect(graph.getNode("Code")).toBeUndefined();
+  });
+
+  it("handles cyclic connections without infinite loop", () => {
+    const graph = buildGraph({
+      name: "Test",
+      nodes: [
+        { name: "Webhook", type: "n8n-nodes-base.webhook", parameters: {}, position: [0, 0] },
+        { name: "Code", type: "n8n-nodes-base.code", parameters: {}, position: [1, 0] },
+        { name: "IF", type: "n8n-nodes-base.if", parameters: {}, position: [2, 0] },
+      ],
+      connections: {
+        "Webhook": { main: [[{ node: "Code", type: "main", index: 0 }]] },
+        "Code": { main: [[{ node: "IF", type: "main", index: 0 }]] },
+        "IF": { main: [[{ node: "Code", type: "main", index: 0 }]] },
+      },
+    }, "test.json");
+
+    expect(graph.getSuccessors("Code")).toHaveLength(1);
+    expect(graph.getPredecessors("Code")).toHaveLength(2);
+  });
 });
