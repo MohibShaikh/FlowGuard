@@ -7,6 +7,7 @@ import { insecureCredentialUsageRule } from "./owasp/insecure-credential-usage.j
 import { excessiveDataExposureRule } from "./owasp/excessive-data-exposure.js";
 import { webhookNoAuthRule } from "./owasp/webhook-no-auth.js";
 import { subWorkflowEscalationRule } from "./owasp/sub-workflow-escalation.js";
+import { aiAgentToolAccessRule } from "./owasp/ai-agent-tool-access.js";
 
 export const allRules: Rule[] = [
   excessiveAgencyRule,
@@ -17,4 +18,5 @@ export const allRules: Rule[] = [
   excessiveDataExposureRule,
   webhookNoAuthRule,
   subWorkflowEscalationRule,
+  aiAgentToolAccessRule,
 ];
