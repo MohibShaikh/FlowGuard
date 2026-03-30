@@ -5,6 +5,7 @@ import { missingInputValidationRule } from "./owasp/missing-input-validation.js"
 import { unsafeOutputHandlingRule } from "./owasp/unsafe-output-handling.js";
 import { insecureCredentialUsageRule } from "./owasp/insecure-credential-usage.js";
 import { excessiveDataExposureRule } from "./owasp/excessive-data-exposure.js";
+import { webhookNoAuthRule } from "./owasp/webhook-no-auth.js";
 
 export const allRules: Rule[] = [
   excessiveAgencyRule,
@@ -13,4 +14,5 @@ export const allRules: Rule[] = [
   unsafeOutputHandlingRule,
   insecureCredentialUsageRule,
   excessiveDataExposureRule,
+  webhookNoAuthRule,
 ];
