@@ -194,4 +194,9 @@ describe("fetchWorkflows", () => {
     expect(calls[0][0]).toBe("https://n8n.example.com/api/v1/workflows?limit=250");
     expect(calls[1][0]).toBe("https://n8n.example.com/api/v1/workflows?limit=250&cursor=cursor-abc");
   });
+
+  it("rejects non-http(s) URL schemes", async () => {
+    await expect(fetchWorkflows("file:///etc/passwd", "key")).rejects.toThrow("must use http:// or https://");
+    await expect(fetchWorkflows("ftp://evil.com", "key")).rejects.toThrow("must use http:// or https://");
+  });
 });

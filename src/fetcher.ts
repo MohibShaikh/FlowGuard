@@ -11,6 +11,9 @@ export async function fetchWorkflows(
 ): Promise<FetchedWorkflow[]> {
   const warn = onWarning ?? (() => {});
   const base = baseUrl.replace(/\/+$/, "");
+  if (!/^https?:\/\//i.test(base)) {
+    throw new Error("n8n instance URL must use http:// or https://");
+  }
   const results: FetchedWorkflow[] = [];
   let cursor: string | undefined;
 
