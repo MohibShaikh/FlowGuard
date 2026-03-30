@@ -5,12 +5,12 @@ import {
 } from "../../src/rules/node-types";
 import type { GraphNode, WorkflowGraph } from "../../src/types";
 
-function makeNode(overrides: Partial<GraphNode>): GraphNode {
-  return { id: "test", name: "test", type: "n8n-nodes-base.code", parameters: {}, position: [0, 0], ...overrides };
+function makeNode(id?: string, type?: string, parameters?: object): GraphNode {
+  return { id: id || "test", name: "test", type: type || "n8n-nodes-base.code", parameters: parameters || {}, position: [0, 0] };
 }
 
-function makeGraph(predecessors: GraphNode[] = []): WorkflowGraph {
-  return { name: "test", filePath: "test.json", nodes: [], edges: [], getNode: () => undefined, getSuccessors: () => [], getPredecessors: () => predecessors, getNodesByType: () => [] };
+function makeWorkflow(nodes: GraphNode[] = []): WorkflowGraph {
+  return { name: "test", filePath: "test.json", nodes, edges: [], getNode: () => undefined, getSuccessors: () => [], getPredecessors: () => [], getNodesByType: () => [] };
 }
 
 describe("node-types", () => {
@@ -24,15 +24,36 @@ describe("node-types", () => {
 
 describe("isTrigger", () => {
   it("returns true for webhook node", () => {
-    expect(isTrigger(makeNode({ type: "n8n-nodes-base.webhook" }), makeGraph())).toBe(true);
+    const graph = makeWorkflow([makeNode("webhook", "n8n-nodes-base.webhook", {})]);
+    expect(isTrigger(graph.nodes[0], graph)).toBe(true);
   });
   it("returns true for httpRequest with no predecessors", () => {
-    expect(isTrigger(makeNode({ type: "n8n-nodes-base.httpRequest" }), makeGraph([]))).toBe(true);
+    const graph = makeWorkflow([makeNode("http", "n8n-nodes-base.httpRequest", {})]);
+    expect(isTrigger(graph.nodes[0], graph)).toBe(true);
   });
   it("returns false for httpRequest with predecessors", () => {
-    expect(isTrigger(makeNode({ type: "n8n-nodes-base.httpRequest" }), makeGraph([makeNode({ id: "prev", name: "prev" })]))).toBe(false);
+    const graph = makeWorkflow([
+      makeNode("prev", "n8n-nodes-base.code", {}),
+      makeNode("http", "n8n-nodes-base.httpRequest", {}),
+    ]);
+    const httpNode = graph.nodes[1];
+    const mockGraph = { ...graph, getPredecessors: () => [graph.nodes[0]] };
+    expect(isTrigger(httpNode, mockGraph)).toBe(false);
   });
   it("returns false for a code node", () => {
-    expect(isTrigger(makeNode({ type: "n8n-nodes-base.code" }), makeGraph())).toBe(false);
+    const graph = makeWorkflow([makeNode("code", "n8n-nodes-base.code", {})]);
+    expect(isTrigger(graph.nodes[0], graph)).toBe(false);
+  });
+  it("recognizes chatTrigger as a trigger", () => {
+    const graph = makeWorkflow([makeNode("Chat", "n8n-nodes-base.chatTrigger", {})]);
+    expect(isTrigger(graph.nodes[0], graph)).toBe(true);
+  });
+  it("recognizes scheduleTrigger as a trigger", () => {
+    const graph = makeWorkflow([makeNode("Cron", "n8n-nodes-base.scheduleTrigger", {})]);
+    expect(isTrigger(graph.nodes[0], graph)).toBe(true);
+  });
+  it("recognizes LangChain chatTrigger as a trigger", () => {
+    const graph = makeWorkflow([makeNode("AI Chat", "@n8n/n8n-nodes-langchain.chatTrigger", {})]);
+    expect(isTrigger(graph.nodes[0], graph)).toBe(true);
   });
 });
