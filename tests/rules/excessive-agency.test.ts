@@ -36,4 +36,12 @@ describe("excessive-agency rule", () => {
     const graph = makeWorkflow([makeNode("Set", "n8n-nodes-base.set", { field: "value" })]);
     expect(excessiveAgencyRule.run(graph)).toHaveLength(0);
   });
+  it("flags wildcard scope even when node has no credentials block", () => {
+    const graph = makeWorkflow([
+      makeNode("OAuth", "n8n-nodes-base.httpRequest", { scope: "*", apiKey: "hardcoded" }),
+    ]);
+    const findings = excessiveAgencyRule.run(graph);
+    expect(findings.length).toBeGreaterThanOrEqual(1);
+    expect(findings.some(f => f.message.includes("overly broad scope"))).toBe(true);
+  });
 });

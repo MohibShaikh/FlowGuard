@@ -22,7 +22,6 @@ export const excessiveAgencyRule: Rule = {
           owaspCategory: this.owaspCategory,
         });
       }
-      if (!node.credentials) continue;
       for (const [key, value] of Object.entries(node.parameters)) {
         if (!SCOPE_KEYS.test(key)) continue;
         const strValue = String(value);
