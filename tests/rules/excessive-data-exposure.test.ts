@@ -81,4 +81,22 @@ describe("excessive-data-exposure rule", () => {
     const findings = excessiveDataExposureRule.run(graph);
     expect(findings).toHaveLength(0);
   });
+
+  it("flags HTTP → Set (keepAllFields) → Slack as still exposed", () => {
+    const graph = makeWorkflow(
+      [
+        makeNode("HTTP", "n8n-nodes-base.httpRequest", {}),
+        makeNode("Set", "n8n-nodes-base.set", { options: { keepAllFields: true } }),
+        makeNode("Slack", "n8n-nodes-base.slack", {}),
+        makeNode("Trigger", "n8n-nodes-base.webhook", {}),
+      ],
+      {
+        "Trigger": { main: [[{ node: "HTTP", type: "main", index: 0 }]] },
+        "HTTP": { main: [[{ node: "Set", type: "main", index: 0 }]] },
+        "Set": { main: [[{ node: "Slack", type: "main", index: 0 }]] },
+      }
+    );
+    const findings = excessiveDataExposureRule.run(graph);
+    expect(findings.length).toBeGreaterThanOrEqual(1);
+  });
 });

@@ -1,8 +1,6 @@
 import type { Rule, Finding, WorkflowGraph, GraphNode } from "../../types.js";
 import { HTTP_NODES, LOGGING_NODES, VALIDATION_NODES, TRANSFORM_NODES, isTrigger } from "../node-types.js";
 
-const INTERMEDIARY_NODES = [...VALIDATION_NODES, ...TRANSFORM_NODES] as readonly string[];
-
 function findDirectLoggingNodes(
   graph: WorkflowGraph,
   httpNode: GraphNode,
@@ -17,7 +15,14 @@ function findDirectLoggingNodes(
     const node = graph.getNode(nodeId);
     if (!node) return;
 
-    if (INTERMEDIARY_NODES.includes(node.type)) return;
+    if ((VALIDATION_NODES as readonly string[]).includes(node.type)) return;
+
+    // Transform nodes only block if they actually transform data
+    if ((TRANSFORM_NODES as readonly string[]).includes(node.type)) {
+      const opts = node.parameters.options as Record<string, unknown> | undefined;
+      if (opts?.keepAllFields !== true) return; // transforms data — stop
+      // keepAllFields=true: data passes through unchanged — continue walk
+    }
 
     if (nodeId !== httpNode.id && (LOGGING_NODES as readonly string[]).includes(node.type)) {
       loggers.push(node);
