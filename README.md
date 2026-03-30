@@ -4,7 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/n8n-flowguard)](https://www.npmjs.com/package/n8n-flowguard)
 [![license](https://img.shields.io/badge/license-AGPL--3.0-blue)](https://github.com/MohibShaikh/FlowGuard/blob/main/LICENSE)
-[![tests](https://img.shields.io/badge/tests-86%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-111%20passing-brightgreen)]()
 
 Security scanner for [n8n](https://n8n.io) workflows. Scans exported JSON files or connects directly to a running n8n instance via API. Detects vulnerabilities mapped to the [OWASP Top 10 for Agentic Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/).
 
@@ -94,6 +94,9 @@ Found 1 critical, 1 high issues across 1 workflow(s).
 | Unsafe Output Handling | A04 | Medium | HTTP responses flowing into code execution or database nodes unvalidated |
 | Insecure Credential Usage | A06 | Critical | Hardcoded API keys, tokens, and secrets in node parameters |
 | Excessive Data Exposure | A07 | Medium | Full HTTP responses forwarded to logging/notification channels without filtering |
+| Unauthenticated Webhook | A03 | High | Webhook nodes with no authentication configured |
+| Sub-Workflow Escalation | A01 | High | Trigger → executeWorkflow without validation (privilege escalation) |
+| AI Agent Tool Access | A01 | Critical | LLM agent nodes connected to code/workflow/HTTP tools |
 
 ## Output Formats
 
@@ -135,7 +138,7 @@ Found 1 critical, 1 high issues across 1 workflow(s).
 
 ```bash
 npm install          # install dependencies
-npm test             # run tests (86 tests)
+npm test             # run tests (111 tests)
 npm run build        # build CLI
 npm run lint         # type check
 ```
